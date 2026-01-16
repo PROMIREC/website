@@ -1,16 +1,91 @@
 ---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/Hero.astro";
+import DiscographyWall from "../components/DiscographyWall.astro";
 
+const baseUrl = import.meta.env.BASE_URL.endsWith("/")
+  ? import.meta.env.BASE_URL
+  : `${import.meta.env.BASE_URL}/`;
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout title="PROMIREC">
+  <Hero
+    name="Andres Algaba"
+    title="Mix Engineer"
+    buttons={[
+      { label: "Bio", href: "#bio" },
+      { label: "Discography", href: "#discography" },
+      { label: "Contact", href: "#contact" },
+    ]}
+  />
+
+  <main>
+    <section id="bio" class="section">
+      <div class="container">
+        <h2>Bio</h2>
+        <p>
+          Graduated from Berklee College Of Music in 2012 with a degree in Music Production and
+          Engineering. After college I moved to Los Angeles where I got the chance to work at The
+          House of Rock under the guidance of Jack Joseph Puig and later on at the legendary Henson
+          Recording Studios in Hollywood, CA as a runner/assistant-trainee.
+        </p>
+        <p>
+          In 2014, I returned to my roots in Belgium and embarked on a freelance career as a
+          recording &amp; mixing engineer. Over the years, I've carved out a niche for myself,
+          primarily as a mix engineer.
+        </p>
+        <p>
+          I've been incredibly fortunate to collaborate with international sensations like Lost
+          Frequencies, K3, Fedde Le Grand, Henri PFR, Kris Kross Amsterdam, Jaap Reesema, Flemming,
+          Snelle, Compact Disk Dummies, Regi, M.I.K.E Push, OT, Aeroplane, Yves Paquet, Lea Rue,
+          Maurice West, Two Pauz, Solarrio, Stereoclip, Metejoor, Natalia, Bart Peeters, Bart Kaëll,
+          Jan Leyers Laura Tesoro, HIDDN, Chackie Jam, Astodan... and many more.
+        </p>
+        <p>
+          As of 2026, I've mixed over 524 songs which have amassed more than 8.3 BILLION plays
+          across all digital streaming platforms. 32 of those singles and 2 albums have been honored
+          with 25 GOLD, 108 PLATINUM and 2 DIAMOND awards. Notably, Lost Frequencies' "Alive &amp;
+          Feeling Fine" and Metejoor's self-titled debut album both clinched Album of the Year awards
+          at the Belgian Music Industry Awards.
+        </p>
+      </div>
+    </section>
+
+    <section id="discography" class="section">
+      <div class="container">
+        <h2>Discography</h2>
+        <p class="muted">
+          Click a tile to view details and play the preview.
+        </p>
+      </div>
+
+      <DiscographyWall dataUrl={`${baseUrl}data/works.json`} />
+    </section>
+
+    <section id="contact" class="section">
+      <div class="container">
+        <h2>Contact</h2>
+        <p class="muted">Static form placeholder. Wire this to Formspree or a Cloudflare Worker later.</p>
+
+        <form class="contact" method="post" action="#">
+          <label>
+            <span>Name</span>
+            <input name="name" autocomplete="name" />
+          </label>
+
+          <label>
+            <span>Email</span>
+            <input name="email" type="email" autocomplete="email" />
+          </label>
+
+          <label>
+            <span>Message</span>
+            <textarea name="message" rows="5"></textarea>
+          </label>
+
+          <button type="submit">Send</button>
+        </form>
+      </div>
+    </section>
+  </main>
+</BaseLayout>

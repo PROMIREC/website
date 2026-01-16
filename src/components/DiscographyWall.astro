@@ -1,0 +1,454 @@
+---
+const { dataUrl } = Astro.props;
+---
+<div class="discography-wall" data-url={dataUrl}>
+  <div class="discography-grid" role="list"></div>
+  <p class="discography-status muted" hidden></p>
+
+  <div class="discography-modal" data-open="false" aria-hidden="true">
+    <div class="discography-modal__backdrop" data-action="close"></div>
+    <div
+      class="discography-modal__dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="discography-modal-title"
+      tabindex="-1"
+    >
+      <button class="discography-modal__close" type="button" aria-label="Close dialog">
+        X
+      </button>
+      <div class="discography-modal__content">
+        <div class="discography-modal__art">
+          <img class="discography-modal__image" alt="" />
+        </div>
+        <div class="discography-modal__panel">
+          <div class="discography-modal__heading">
+            <p class="discography-modal__artist"></p>
+            <span class="discography-modal__divider" aria-hidden="true">-</span>
+            <h3 id="discography-modal-title" class="discography-modal__title"></h3>
+          </div>
+          <p class="discography-modal__streams"></p>
+          <p class="discography-modal__credit"></p>
+          <div class="discography-modal__audio">
+            <a
+              class="discography-modal__spotify"
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Open on Spotify"
+              hidden
+            >
+              Spotify
+            </a>
+            <button class="discography-modal__toggle" type="button" aria-label="Play preview">
+              Play
+            </button>
+            <audio class="discography-modal__player" controls tabindex="-1"></audio>
+            <p class="discography-modal__note" hidden>Click play to start</p>
+          </div>
+          <p class="discography-modal__label"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  (() => {
+    const scriptEl = document.currentScript;
+    const root =
+      (scriptEl && scriptEl.closest(".discography-wall")) ||
+      document.querySelector(".discography-wall[data-url]");
+    if (!root) {
+      console.warn("DiscographyWall root element not found.");
+      return;
+    }
+    const grid = root.querySelector(".discography-grid");
+    const status = root.querySelector(".discography-status");
+    const modal = root.querySelector(".discography-modal");
+    const dialog = root.querySelector(".discography-modal__dialog");
+    const closeButton = root.querySelector(".discography-modal__close");
+    const backdrop = root.querySelector(".discography-modal__backdrop");
+    const modalImage = root.querySelector(".discography-modal__image");
+    const modalArtist = root.querySelector(".discography-modal__artist");
+    const modalTitle = root.querySelector(".discography-modal__title");
+    const modalLabel = root.querySelector(".discography-modal__label");
+    const modalStreams = root.querySelector(".discography-modal__streams");
+    const modalCredit = root.querySelector(".discography-modal__credit");
+    const modalSpotify = root.querySelector(".discography-modal__spotify");
+    const modalToggle = root.querySelector(".discography-modal__toggle");
+    const modalPlayer = root.querySelector(".discography-modal__player");
+    const modalNote = root.querySelector(".discography-modal__note");
+
+    const dataUrl = root.dataset.url;
+    const focusableSelector =
+      'a[href], button:not([disabled]), input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
+
+    let items = [];
+    let lastFocused = null;
+    let fadeRaf = null;
+    let sessionId = 0;
+
+    const prefersReducedMotion =
+      window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const setToggleState = (isPlaying) => {
+      if (isPlaying) {
+        modalToggle.textContent = "Stop";
+        modalToggle.setAttribute("aria-label", "Stop preview");
+      } else {
+        modalToggle.textContent = "Play";
+        modalToggle.setAttribute("aria-label", "Play preview");
+      }
+    };
+
+    const formatStreams = (value) => {
+      const numberValue = Number(value);
+      if (!Number.isFinite(numberValue)) return "";
+      return new Intl.NumberFormat("en-US").format(numberValue);
+    };
+
+    const deriveCreditLine = (role = "") => {
+      const normalized = String(role).toLowerCase();
+      const hasMix = normalized.includes("mix");
+      const hasMaster = normalized.includes("master");
+      if (hasMix && hasMaster) return "Mixed & mastered by yours truly";
+      if (hasMaster) return "Mastered by yours truly";
+      if (hasMix) return "Mixed by yours truly";
+      return "Mixed by yours truly";
+    };
+
+    const isValidItem = (item) => {
+      const required = ["id", "artist", "title", "artworkUrl", "streams", "role", "previewUrl"];
+      const missing = required.filter(
+        (key) => !item || item[key] === undefined || item[key] === ""
+      );
+      if (missing.length > 0) {
+        console.warn("Discography item missing fields:", missing, item);
+        return false;
+      }
+      const streamsValue = Number(item.streams);
+      if (!Number.isFinite(streamsValue)) {
+        console.warn("Discography item has invalid streams:", item);
+        return false;
+      }
+      return true;
+    };
+
+    const fadeAudio = (audio, targetVolume, durationMs, onComplete) => {
+      if (!audio) return;
+      if (fadeRaf) {
+        cancelAnimationFrame(fadeRaf);
+        fadeRaf = null;
+      }
+      if (prefersReducedMotion || durationMs === 0) {
+        audio.volume = targetVolume;
+        if (typeof onComplete === "function") {
+          onComplete();
+        }
+        return;
+      }
+      const startVolume = audio.volume;
+      const startTime = performance.now();
+      const step = (now) => {
+        const progress = Math.min(1, (now - startTime) / durationMs);
+        audio.volume = startVolume + (targetVolume - startVolume) * progress;
+        if (progress < 1) {
+          fadeRaf = requestAnimationFrame(step);
+        } else {
+          fadeRaf = null;
+          if (typeof onComplete === "function") {
+            onComplete();
+          }
+        }
+      };
+      fadeRaf = requestAnimationFrame(step);
+    };
+
+    const playPreview = (session) => {
+      modalNote.hidden = true;
+      modalPlayer.volume = prefersReducedMotion ? 1 : 0;
+      const playPromise = modalPlayer.play();
+      if (playPromise && typeof playPromise.catch === "function") {
+        playPromise
+          .then(() => {
+            if (session !== sessionId || modal.dataset.open !== "true") {
+              return;
+            }
+            setToggleState(true);
+            fadeAudio(modalPlayer, 1, 1500);
+          })
+          .catch(() => {
+            if (session !== sessionId || modal.dataset.open !== "true") {
+              return;
+            }
+            setToggleState(false);
+            modalNote.hidden = false;
+          });
+      } else {
+        if (session !== sessionId || modal.dataset.open !== "true") {
+          return;
+        }
+        setToggleState(true);
+        fadeAudio(modalPlayer, 1, 1500);
+      }
+    };
+
+    const pausePreview = () => {
+      if (modalPlayer.paused) {
+        setToggleState(false);
+        return;
+      }
+      fadeAudio(modalPlayer, 0, 1500, () => {
+        modalPlayer.pause();
+        setToggleState(false);
+      });
+    };
+
+    const stopAudioImmediate = () => {
+      if (fadeRaf) {
+        cancelAnimationFrame(fadeRaf);
+        fadeRaf = null;
+      }
+      modalPlayer.pause();
+      try {
+        modalPlayer.currentTime = 0;
+      } catch (error) {
+        // Ignore reset errors on unloaded media.
+      }
+      modalPlayer.volume = 1;
+      setToggleState(false);
+    };
+
+    const buildCandidateUrls = (url) => {
+      const candidates = new Set();
+      if (!url) return [];
+
+      candidates.add(url);
+      const normalized = url.startsWith("/") ? url : `/${url}`;
+      candidates.add(normalized);
+
+      try {
+        const resolved = new URL(url, window.location.origin);
+        candidates.add(resolved.pathname + resolved.search);
+      } catch (error) {
+        console.warn("Discography URL resolution error:", error);
+      }
+
+      const baseSegment = window.location.pathname.split("/").filter(Boolean)[0];
+      if (baseSegment) {
+        const basePrefix = `/${baseSegment}/`;
+        if (normalized.startsWith(basePrefix)) {
+          candidates.add(normalized.replace(basePrefix, "/"));
+        } else {
+          candidates.add(`${basePrefix}${normalized.replace(/^\/+/, "")}`);
+        }
+      }
+
+      return Array.from(candidates);
+    };
+
+    const fetchJson = async (url) => {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Discography fetch failed: ${response.status}`);
+      }
+      return response.json();
+    };
+
+    const buildTile = (item, index) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "discography-tile";
+      button.setAttribute("aria-label", `${item.artist} - ${item.title}`);
+      button.dataset.index = String(index);
+
+      const img = document.createElement("img");
+      img.className = "discography-tile__image";
+      img.src = item.artworkUrl;
+      img.alt = "";
+      img.loading = "lazy";
+      img.decoding = "async";
+
+      button.appendChild(img);
+      return button;
+    };
+
+    const renderGrid = (data) => {
+      grid.innerHTML = "";
+      const fragment = document.createDocumentFragment();
+      items = data
+        .filter((item) => isValidItem(item))
+        .map((item) => ({ ...item, streams: Number(item.streams) }));
+
+      items.forEach((item, index) => {
+        fragment.appendChild(buildTile(item, index));
+      });
+
+      if (items.length === 0) {
+        status.textContent = "No discography items available yet.";
+        status.hidden = false;
+        return;
+      }
+
+      grid.appendChild(fragment);
+    };
+
+    const getFocusableElements = () =>
+      Array.from(dialog.querySelectorAll(focusableSelector)).filter(
+        (el) => !el.hasAttribute("disabled") && el.getAttribute("tabindex") !== "-1"
+      );
+
+    const trapFocus = (event) => {
+      if (modal.dataset.open !== "true" || event.key !== "Tab") return;
+      const focusables = getFocusableElements();
+      if (!focusables.length) return;
+
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement;
+
+      if (event.shiftKey && active === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    const openModal = (index) => {
+      const item = items[index];
+      if (!item) return;
+      lastFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+      modalImage.src = item.artworkUrl;
+      modalImage.alt = `${item.title} by ${item.artist}`;
+      modalArtist.textContent = item.artist;
+      modalTitle.textContent = item.title;
+      if (item.label) {
+        modalLabel.textContent = `Label: ${item.label}`;
+        modalLabel.hidden = false;
+      } else {
+        modalLabel.textContent = "";
+        modalLabel.hidden = true;
+      }
+      modalStreams.textContent = `${formatStreams(item.streams)} streams`;
+      modalCredit.textContent = deriveCreditLine(item.role);
+      const spotifyUrl = item.spotifyUrl || item.spotifyURL;
+      if (spotifyUrl) {
+        modalSpotify.href = spotifyUrl;
+        modalSpotify.hidden = false;
+      } else {
+        modalSpotify.href = "#";
+        modalSpotify.hidden = true;
+      }
+      modalNote.hidden = true;
+
+      modalPlayer.pause();
+      modalPlayer.src = item.previewUrl;
+      modalPlayer.load();
+      modalPlayer.volume = prefersReducedMotion ? 1 : 0;
+      setToggleState(false);
+      sessionId += 1;
+      const session = sessionId;
+
+      modal.dataset.open = "true";
+      modal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+
+      requestAnimationFrame(() => {
+        closeButton.focus();
+        playPreview(session);
+      });
+    };
+
+    const closeModal = () => {
+      if (modal.dataset.open !== "true") return;
+      modal.dataset.open = "false";
+      modal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+      sessionId += 1;
+      stopAudioImmediate();
+      modalPlayer.removeAttribute("src");
+      modalPlayer.load();
+      modalNote.hidden = true;
+
+      if (lastFocused) {
+        lastFocused.focus();
+      }
+    };
+
+    grid.addEventListener("click", (event) => {
+      const button = event.target.closest(".discography-tile");
+      if (!button) return;
+      const index = Number(button.dataset.index);
+      openModal(index);
+    });
+
+    grid.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      const button = event.target.closest(".discography-tile");
+      if (!button) return;
+      event.preventDefault();
+      const index = Number(button.dataset.index);
+      openModal(index);
+    });
+
+    closeButton.addEventListener("click", closeModal);
+    backdrop.addEventListener("click", closeModal);
+    modalSpotify.addEventListener("click", () => {
+      stopAudioImmediate();
+    });
+    modalToggle.addEventListener("click", () => {
+      if (modalPlayer.paused || modalPlayer.ended) {
+        playPreview(sessionId);
+      } else {
+        stopAudioImmediate();
+      }
+    });
+    modalPlayer.addEventListener("play", () => {
+      setToggleState(true);
+    });
+    modalPlayer.addEventListener("pause", () => {
+      if (modal.dataset.open === "true") {
+        setToggleState(false);
+      }
+    });
+    modalPlayer.addEventListener("ended", () => {
+      setToggleState(false);
+    });
+    modal.addEventListener("keydown", trapFocus);
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeModal();
+      }
+    });
+
+    const fetchData = async () => {
+      const candidates = buildCandidateUrls(dataUrl);
+      let lastError = null;
+
+      for (const url of candidates) {
+        try {
+          const data = await fetchJson(url);
+          if (!data || !Array.isArray(data.items)) {
+            throw new Error("Discography data missing items array.");
+          }
+          renderGrid(data.items);
+          return;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+
+      if (lastError) {
+        console.warn(lastError);
+      }
+      status.textContent = "Unable to load discography right now.";
+      status.hidden = false;
+    };
+
+    fetchData();
+  })();
+</script>
