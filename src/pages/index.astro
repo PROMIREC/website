@@ -62,12 +62,17 @@ const baseUrl = import.meta.env.BASE_URL.endsWith("/")
       <DiscographyWall dataUrl={`${baseUrl}data/works.json`} />
     </section>
 
-    <section id="contact" class="section">
+    <section id="contact" class="section section--contact">
       <div class="container">
         <h2>Contact</h2>
-        <p class="muted">Static form placeholder. Wire this to Formspree or a Cloudflare Worker later.</p>
+        <p class="muted">Send a message and I'll get back to you soon.</p>
 
-        <form class="contact" method="post" action="#">
+        <form
+          id="contact-form"
+          class="contact"
+          method="post"
+          action="https://formspree.io/f/xvzzzzgd"
+        >
           <label>
             <span>Name</span>
             <input name="name" autocomplete="name" />
@@ -85,7 +90,54 @@ const baseUrl = import.meta.env.BASE_URL.endsWith("/")
 
           <button type="submit">Send</button>
         </form>
+
+        <p class="contact__success" role="status" aria-live="polite" hidden>
+          Thanks for the message. I'll get back to you soon.
+        </p>
+        <p class="contact__error" role="status" aria-live="polite" hidden>
+          Something went wrong. Please try again.
+        </p>
       </div>
     </section>
   </main>
+
+  <script type="module">
+    const form = document.querySelector("#contact-form");
+    if (form) {
+      const container = form.closest("#contact");
+      const success = container?.querySelector(".contact__success");
+      const error = container?.querySelector(".contact__error");
+      const submitButton = form.querySelector('button[type="submit"]');
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (success) success.hidden = true;
+        if (error) error.hidden = true;
+        if (submitButton) submitButton.disabled = true;
+        form.setAttribute("aria-busy", "true");
+
+        try {
+          const response = await fetch(form.action, {
+            method: form.method,
+            body: new FormData(form),
+            headers: {
+              Accept: "application/json",
+            },
+          });
+
+          if (response.ok) {
+            form.reset();
+            if (success) success.hidden = false;
+          } else if (error) {
+            error.hidden = false;
+          }
+        } catch (err) {
+          if (error) error.hidden = false;
+        } finally {
+          if (submitButton) submitButton.disabled = false;
+          form.removeAttribute("aria-busy");
+        }
+      });
+    }
+  </script>
 </BaseLayout>
