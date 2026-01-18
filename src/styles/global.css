@@ -70,13 +70,21 @@ a {
   position: relative;
 }
 
+.section-menu--sticky {
+  position: sticky;
+  top: clamp(1.25rem, 4vw, 2.25rem);
+  margin-left: auto;
+  align-self: flex-start;
+  z-index: 5;
+}
+
 .section-menu__button {
   list-style: none;
   width: 42px;
   height: 42px;
   border-radius: 10px;
-  border: 1px solid #3a3a3a;
-  background: #2b2b2b;
+  border: 1px solid #2a2a2a;
+  background: #1c1c1c;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -94,8 +102,8 @@ a {
 }
 
 .section-menu__button:hover {
-  border-color: #4a4a4a;
-  background: #343434;
+  border-color: #3a3a3a;
+  background: #262626;
 }
 
 .section-menu__button:focus-visible {
