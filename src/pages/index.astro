@@ -6,6 +6,11 @@ import DiscographyWall from "../components/DiscographyWall.astro";
 const baseUrl = import.meta.env.BASE_URL.endsWith("/")
   ? import.meta.env.BASE_URL
   : `${import.meta.env.BASE_URL}/`;
+const sectionMenuLinks = [
+  { label: "Bio", href: "#bio" },
+  { label: "Discography", href: "#discography" },
+  { label: "Contact", href: "#contact" },
+];
 ---
 
 <BaseLayout title="PROMIREC">
@@ -22,7 +27,25 @@ const baseUrl = import.meta.env.BASE_URL.endsWith("/")
   <main>
     <section id="bio" class="section">
       <div class="container">
-        <h2>Bio</h2>
+        <div class="section__header">
+          <h2>Bio</h2>
+          <details class="section-menu">
+            <summary class="section-menu__button" aria-label="Open section menu">
+              <span class="section-menu__icon" aria-hidden="true"></span>
+            </summary>
+            <nav class="section-menu__panel" aria-label="Section">
+              <ul class="section-menu__list">
+                {sectionMenuLinks.map((link) => (
+                  <li>
+                    <a class="section-menu__link" href={link.href}>
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </details>
+        </div>
         <p>
           Graduated from Berklee College Of Music in 2012 with a degree in Music Production and
           Engineering. After college I moved to Los Angeles where I got the chance to work at The
@@ -53,7 +76,25 @@ const baseUrl = import.meta.env.BASE_URL.endsWith("/")
 
     <section id="discography" class="section">
       <div class="container">
-        <h2>Discography</h2>
+        <div class="section__header">
+          <h2>Discography</h2>
+          <details class="section-menu">
+            <summary class="section-menu__button" aria-label="Open section menu">
+              <span class="section-menu__icon" aria-hidden="true"></span>
+            </summary>
+            <nav class="section-menu__panel" aria-label="Section">
+              <ul class="section-menu__list">
+                {sectionMenuLinks.map((link) => (
+                  <li>
+                    <a class="section-menu__link" href={link.href}>
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </details>
+        </div>
         <p class="muted">
           Click a tile to view details and play the preview.
         </p>
@@ -64,7 +105,25 @@ const baseUrl = import.meta.env.BASE_URL.endsWith("/")
 
     <section id="contact" class="section section--contact">
       <div class="container">
-        <h2>Contact</h2>
+        <div class="section__header">
+          <h2>Contact</h2>
+          <details class="section-menu">
+            <summary class="section-menu__button" aria-label="Open section menu">
+              <span class="section-menu__icon" aria-hidden="true"></span>
+            </summary>
+            <nav class="section-menu__panel" aria-label="Section">
+              <ul class="section-menu__list">
+                {sectionMenuLinks.map((link) => (
+                  <li>
+                    <a class="section-menu__link" href={link.href}>
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </details>
+        </div>
         <p class="muted">Send a message and I'll get back to you soon.</p>
 
         <form
