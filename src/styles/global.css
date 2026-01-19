@@ -539,6 +539,37 @@ a {
   color: #8e8e8e;
 }
 
+.site-footer {
+  padding: 1.25rem 0;
+  font-size: 0.75rem;
+  color: #9a9a9a;
+}
+
+.site-footer__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.site-footer__cell {
+  flex: 1;
+  min-width: 180px;
+}
+
+.site-footer__cell--left {
+  text-align: left;
+}
+
+.site-footer__cell--center {
+  text-align: center;
+}
+
+.site-footer__cell--right {
+  text-align: right;
+}
+
 @media (max-width: 720px) {
   .contact {
     grid-template-columns: 1fr;

@@ -12,5 +12,14 @@ const { title = "PROMIREC" } = Astro.props;
   </head>
   <body>
     <slot />
+    <footer class="site-footer">
+      <div class="container site-footer__row">
+        <span class="site-footer__cell site-footer__cell--left">PROMIREC BV</span>
+        <span class="site-footer__cell site-footer__cell--center">BE 1002.585.664</span>
+        <span class="site-footer__cell site-footer__cell--right">
+          Uitbreidingstraat 538, 2600 Antwerpen
+        </span>
+      </div>
+    </footer>
   </body>
 </html>
