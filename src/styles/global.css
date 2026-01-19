@@ -305,6 +305,7 @@ a {
   overflow: hidden;
   border-radius: 6px;
   cursor: pointer;
+  transition: transform 200ms ease, box-shadow 200ms ease;
 }
 
 .discography-tile__image {
@@ -316,8 +317,14 @@ a {
 
 .discography-tile:hover .discography-tile__image,
 .discography-tile:focus-visible .discography-tile__image {
-  transform: scale(1.03);
+  transform: scale(1.04);
   opacity: 0.9;
+}
+
+.discography-tile:hover,
+.discography-tile:focus-visible {
+  transform: scale(1.05);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.55);
 }
 
 .discography-tile:focus-visible {
