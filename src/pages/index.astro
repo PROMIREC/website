@@ -11,6 +11,8 @@ const sectionMenuLinks = [
   { label: "Discography", href: "#discography" },
   { label: "Contact", href: "#contact" },
 ];
+const getSectionMenuLinks = (currentId: string) =>
+  sectionMenuLinks.filter((link) => link.href !== `#${currentId}`);
 ---
 
 <BaseLayout title="PROMIREC">
@@ -35,7 +37,7 @@ const sectionMenuLinks = [
             </summary>
             <nav class="section-menu__panel" aria-label="Section">
               <ul class="section-menu__list">
-                {sectionMenuLinks.map((link) => (
+                {getSectionMenuLinks("bio").map((link) => (
                   <li>
                     <a class="section-menu__link" href={link.href}>
                       {link.label}
@@ -84,7 +86,7 @@ const sectionMenuLinks = [
             </summary>
             <nav class="section-menu__panel" aria-label="Section">
               <ul class="section-menu__list">
-                {sectionMenuLinks.map((link) => (
+                {getSectionMenuLinks("discography").map((link) => (
                   <li>
                     <a class="section-menu__link" href={link.href}>
                       {link.label}
@@ -113,7 +115,7 @@ const sectionMenuLinks = [
             </summary>
             <nav class="section-menu__panel" aria-label="Section">
               <ul class="section-menu__list">
-                {sectionMenuLinks.map((link) => (
+                {getSectionMenuLinks("contact").map((link) => (
                   <li>
                     <a class="section-menu__link" href={link.href}>
                       {link.label}
@@ -197,6 +199,31 @@ const sectionMenuLinks = [
           form.removeAttribute("aria-busy");
         }
       });
+    }
+
+    const sectionMenus = Array.from(document.querySelectorAll(".section-menu"));
+    if (sectionMenus.length) {
+      const closeMenus = (exception) => {
+        sectionMenus.forEach((menu) => {
+          if (menu !== exception) {
+            menu.removeAttribute("open");
+          }
+        });
+      };
+
+      document.addEventListener("click", (event) => {
+        const target = event.target;
+        const menu = target instanceof Element ? target.closest(".section-menu") : null;
+        closeMenus(menu ?? undefined);
+      });
+
+      window.addEventListener(
+        "scroll",
+        () => {
+          closeMenus();
+        },
+        { passive: true },
+      );
     }
   </script>
 </BaseLayout>
