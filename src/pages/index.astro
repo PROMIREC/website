@@ -2,6 +2,8 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Hero from "../components/Hero.astro";
 import DiscographyWall from "../components/DiscographyWall.astro";
+import TextDiscography from "../components/TextDiscography.astro";
+import { loadWorks } from "../lib/works";
 
 const baseUrl = import.meta.env.BASE_URL.endsWith("/")
   ? import.meta.env.BASE_URL
@@ -13,9 +15,14 @@ const sectionMenuLinks = [
 ];
 const getSectionMenuLinks = (currentId: string) =>
   sectionMenuLinks.filter((link) => link.href !== `#${currentId}`);
+
+const works = await loadWorks();
 ---
 
-<BaseLayout title="PROMIREC">
+<BaseLayout
+  title="Andres Algaba — Mixing & Mastering Engineer | PROMIREC"
+  description="Mixing and mastering engineer with credits across international releases. Discography, audio previews, and contact."
+>
   <Hero
     name="Andres Algaba"
     title="Mix Engineer"
@@ -98,11 +105,14 @@ const getSectionMenuLinks = (currentId: string) =>
           </details>
         </div>
         <p class="muted">
-          Click a tile to view details and play the preview.
-        </p>
+          Click a tile to view details and play the preview. Streaming totals reflect combined plays across all major platforms. Data made available by Muso.ai.
       </div>
 
       <DiscographyWall dataUrl={`${baseUrl}data/works.json`} />
+
+      <div class="container">
+        <TextDiscography items={works} className="text-discography--subtle" />
+      </div>
     </section>
 
     <section id="contact" class="section section--contact">

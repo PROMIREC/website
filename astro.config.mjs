@@ -2,7 +2,6 @@
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
-  site: 'https://website.promireclabs.work',
+  site: 'https://promirec.com',
   base: '/',
 });
-

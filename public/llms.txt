@@ -1,0 +1,23 @@
+# PROMIREC — Andres Algaba
+
+Andres Algaba is a mixing and mastering engineer based in Antwerpen, Belgium, working on international releases across pop/electronic/dance and beyond.
+
+## Services
+- Mixing
+- Mastering
+
+## Portfolio / Discography
+- https://promirec.com/#discography (interactive discography with audio previews)
+- https://promirec.com/discography/ (crawlable text discography)
+- https://promirec.com/work/ (individual song credit pages under /work/<id>/)
+
+## Contact
+- https://promirec.com/#contact (contact form)
+
+## Social / streaming
+- https://www.instagram.com/promirec
+- https://www.facebook.com/promirec
+- https://open.spotify.com/playlist/5WvWL0ZUvgjdfthCLzFMS8?si=613a621caa314770
+
+## Canonical site
+- https://promirec.com/

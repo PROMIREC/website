@@ -1,0 +1,187 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { loadWorks, uniqueSpotifyWorks } from "../../lib/works";
+
+export async function getStaticPaths() {
+  const works = uniqueSpotifyWorks(await loadWorks());
+  return works.map((work) => ({
+    params: { spotifyId: work.spotifyId! },
+    props: { work },
+  }));
+}
+
+const { work } = Astro.props as {
+  work: Awaited<ReturnType<typeof loadWorks>>[number];
+};
+
+const pageTitle = `${work.title} — ${work.role || "Mix"} credit | Andres Algaba`;
+const description = `Andres Algaba (${work.role || "Mix"} credit) for “${work.title}” by ${work.artist}. View discography and contact at promirec.com.`;
+const imageAlt = `Artwork for ${work.title} by ${work.artist}`;
+
+const musicRecordingJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "MusicRecording",
+  name: work.title,
+  byArtist: {
+    "@type": "MusicGroup",
+    name: work.artist,
+  },
+  inLanguage: "en",
+  url: new URL(Astro.url.pathname, Astro.site ?? "https://promirec.com").href,
+  image: work.artworkUrl,
+  sameAs: work.spotifyUrl,
+  contributor: {
+    "@type": "Role",
+    roleName: `${work.role || "Mix"} engineer`,
+    contributor: {
+      "@type": "Person",
+      name: "Andres Algaba",
+      url: "https://promirec.com/",
+    },
+  },
+};
+---
+
+<BaseLayout
+  title={pageTitle}
+  description={description}
+  image={work.artworkUrl || "/img/og.jpg"}
+  imageAlt={imageAlt}
+  ogType="music.song"
+  extraJsonLd={musicRecordingJsonLd}
+  imageWidth={null}
+  imageHeight={null}
+>
+  <main class="work">
+    <div class="container">
+      <p class="muted">
+        Credit page
+      </p>
+      <h1 class="work__title">
+        {work.title}
+      </h1>
+      <p class="work__artist muted">
+        {work.artist}
+      </p>
+
+      <div class="work__card">
+        {work.artworkUrl && (
+          <img
+            class="work__art"
+            src={work.artworkUrl}
+            alt={`Artwork for ${work.title} by ${work.artist}`}
+            loading="eager"
+            decoding="async"
+          />
+        )}
+        <div class="work__meta">
+          <p class="work__credit">
+            <strong>{work.role || "Mix"}</strong> credit by <strong>Andres Algaba</strong> (PROMIREC), Antwerpen, Belgium.
+          </p>
+          {typeof work.streams === "number" && (
+            <p class="muted work__streams">
+              {new Intl.NumberFormat("en-US").format(work.streams)} streams (reported)
+            </p>
+          )}
+          {work.label && (
+            <p class="muted work__label">
+              Label: {work.label}
+            </p>
+          )}
+          <div class="work__links">
+            <a class="work__link" href="/#discography">Back to discography</a>
+            <a class="work__link" href="/#contact">Contact</a>
+            {work.spotifyUrl && (
+              <a class="work__link" href={work.spotifyUrl} target="_blank" rel="noopener noreferrer">
+                Open on Spotify
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .work {
+    padding: clamp(2rem, 6vw, 4rem) 0;
+    background: #000;
+    min-height: 100vh;
+    min-height: 100svh;
+  }
+
+  .work__title {
+    margin: 0.25rem 0 0.35rem 0;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    color: #e7e7e7;
+  }
+
+  .work__artist {
+    margin: 0 0 1.5rem 0;
+  }
+
+  .work__card {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 1.25rem;
+    align-items: start;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 1.25rem;
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .work__art {
+    width: 140px;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .work__credit {
+    margin: 0;
+    color: rgba(231, 231, 231, 0.9);
+    line-height: 1.35;
+  }
+
+  .work__streams,
+  .work__label {
+    margin: 0.5rem 0 0 0;
+  }
+
+  .work__links {
+    margin-top: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+  }
+
+  .work__link {
+    color: rgba(207, 207, 207, 0.85);
+    text-decoration: none;
+    text-underline-offset: 0.25em;
+  }
+
+  .work__link:hover,
+  .work__link:focus-visible {
+    color: #fff;
+    text-decoration: underline;
+  }
+
+  @media (max-width: 520px) {
+    .work__card {
+      grid-template-columns: 1fr;
+    }
+
+    .work__art {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1 / 1;
+    }
+  }
+</style>

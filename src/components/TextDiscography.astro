@@ -1,0 +1,187 @@
+---
+import type { WorkItem } from "../lib/works";
+
+const { items, className = "" } = Astro.props as {
+  items: WorkItem[];
+  className?: string;
+};
+
+const sorted = [...items].sort((a, b) => (b.streams ?? 0) - (a.streams ?? 0));
+---
+
+<details class={`text-discography ${className}`.trim()}>
+  <summary class="text-discography__summary">
+    <span class="text-discography__label">Text discography</span>
+  </summary>
+  <div class="text-discography__panel">
+    <p class="muted text-discography__intro">
+      A crawlable text version of the discography for search engines and assistants.
+    </p>
+    <ul class="text-discography__list">
+      {sorted.map((item) => (
+        <li class="text-discography__item">
+          {item.spotifyId ? (
+            <a class="text-discography__link" href={`/work/${encodeURIComponent(item.spotifyId)}/`}>
+              <span class="text-discography__artist">{item.artist}</span>
+              <span aria-hidden="true"> — </span>
+              <span class="text-discography__title">{item.title}</span>
+              <span class="text-discography__meta">
+                {" "}
+                ({item.role || "Mix"} credit)
+              </span>
+            </a>
+          ) : (
+            <>
+              <span class="text-discography__artist">{item.artist}</span>
+              <span aria-hidden="true"> — </span>
+              <span class="text-discography__title">{item.title}</span>
+              <span class="text-discography__meta">
+                {" "}
+                ({item.role || "Mix"} credit)
+              </span>
+            </>
+          )}
+        </li>
+      ))}
+    </ul>
+  </div>
+</details>
+
+<style>
+  .text-discography {
+    margin-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 0.75rem;
+  }
+
+  .text-discography__summary {
+    cursor: pointer;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    color: rgba(207, 207, 207, 0.45);
+    user-select: none;
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .text-discography__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .text-discography__summary::marker {
+    content: "";
+  }
+
+  .text-discography__summary::after {
+    content: "";
+    width: 0.55rem;
+    height: 0.55rem;
+    border-right: 1px solid rgba(207, 207, 207, 0.38);
+    border-bottom: 1px solid rgba(207, 207, 207, 0.38);
+    transform: rotate(45deg);
+    transform-origin: center;
+    transition: transform 150ms ease, border-color 150ms ease;
+  }
+
+  .text-discography[open] .text-discography__summary::after {
+    transform: rotate(-135deg);
+  }
+
+  .text-discography__note {
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
+    margin-left: 0.25rem;
+    color: rgba(207, 207, 207, 0.3);
+  }
+
+  .text-discography__panel {
+    margin-top: 0.75rem;
+  }
+
+  .text-discography__intro {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.9rem;
+  }
+
+  .text-discography__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .text-discography__item {
+    font-size: 0.95rem;
+    line-height: 1.25;
+    color: rgba(207, 207, 207, 0.7);
+  }
+
+  .text-discography__link {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .text-discography__link:hover,
+  .text-discography__link:focus-visible {
+    color: rgba(240, 240, 240, 0.9);
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+  }
+
+  .text-discography__meta {
+    color: rgba(207, 207, 207, 0.45);
+  }
+
+  .text-discography--subtle {
+    border-top: 0;
+    padding-top: 0;
+    margin-top: 0.75rem;
+  }
+
+  .text-discography--subtle .text-discography__summary {
+    font-size: 0.7rem;
+    letter-spacing: 0.02em;
+    color: rgba(207, 207, 207, 0.14);
+  }
+
+  .text-discography--subtle .text-discography__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .text-discography--subtle .text-discography__summary::after {
+    width: 0.34rem;
+    height: 0.34rem;
+    border-color: rgba(207, 207, 207, 0.12);
+  }
+
+  .text-discography--subtle .text-discography__intro {
+    display: none;
+  }
+
+  .text-discography--subtle .text-discography__item {
+    font-size: 0.8rem;
+    color: rgba(207, 207, 207, 0.5);
+  }
+
+  .text-discography--subtle .text-discography__meta {
+    color: rgba(207, 207, 207, 0.22);
+  }
+
+  .text-discography--subtle .text-discography__panel {
+    max-height: 220px;
+    overflow: auto;
+    padding-right: 0.25rem;
+  }
+</style>
