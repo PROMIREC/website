@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import { resolve } from "node:path";
 
 export type WorkItem = {
   id: string;
@@ -19,7 +20,7 @@ type WorksJson = {
   items?: unknown;
 };
 
-const worksJsonUrl = new URL("../../public/data/works.json", import.meta.url);
+export const worksJsonPath = resolve("public/data/works.json");
 
 const asNonEmptyString = (value: unknown) => {
   if (typeof value !== "string") return undefined;
@@ -37,7 +38,7 @@ const asNumber = (value: unknown) => {
 };
 
 export async function loadWorks(): Promise<WorkItem[]> {
-  const raw = await fs.readFile(worksJsonUrl, "utf8");
+  const raw = await fs.readFile(worksJsonPath, "utf8");
   const parsed = JSON.parse(raw) as WorksJson;
   const items = Array.isArray(parsed.items) ? parsed.items : [];
 

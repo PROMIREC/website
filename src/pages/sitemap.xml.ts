@@ -1,7 +1,5 @@
 import fs from "node:fs/promises";
-import { loadWorks, uniqueSpotifyWorks, workPath } from "../lib/works";
-
-const worksJsonUrl = new URL("../../public/data/works.json", import.meta.url);
+import { loadWorks, uniqueSpotifyWorks, workPath, worksJsonPath } from "../lib/works";
 
 const escapeXml = (value: string) =>
   value
@@ -23,7 +21,7 @@ export async function GET({ site }: { site: URL }) {
 
   let lastmod: string | undefined;
   try {
-    const raw = await fs.readFile(worksJsonUrl, "utf8");
+    const raw = await fs.readFile(worksJsonPath, "utf8");
     const parsed = JSON.parse(raw) as { generatedAt?: unknown };
     lastmod = toIsoDate(parsed.generatedAt);
   } catch {
