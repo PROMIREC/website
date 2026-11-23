@@ -8,8 +8,7 @@ Andres Algaba is a mixing and mastering engineer based in Antwerpen, Belgium, wo
 
 ## Portfolio / Discography
 - https://promirec.com/#discography (interactive discography with audio previews)
-- https://promirec.com/discography/ (crawlable text discography)
-- https://promirec.com/work/ (individual song credit pages under /work/<id>/)
+- [Full discography and individual song credits](https://promirec.com/discography/)
 
 ## Contact
 - https://promirec.com/#contact (contact form)

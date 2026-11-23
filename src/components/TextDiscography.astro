@@ -27,7 +27,7 @@ const sorted = [...items].sort((a, b) => (b.streams ?? 0) - (a.streams ?? 0));
               <span class="text-discography__title">{item.title}</span>
               <span class="text-discography__meta">
                 {" "}
-                ({item.role || "Mix"} credit)
+                ({item.role ? `${item.role} credit` : "credit"})
               </span>
             </a>
           ) : (
@@ -37,7 +37,7 @@ const sorted = [...items].sort((a, b) => (b.streams ?? 0) - (a.streams ?? 0));
               <span class="text-discography__title">{item.title}</span>
               <span class="text-discography__meta">
                 {" "}
-                ({item.role || "Mix"} credit)
+                ({item.role ? `${item.role} credit` : "credit"})
               </span>
             </>
           )}

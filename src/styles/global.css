@@ -621,6 +621,23 @@ a {
   }
 }
 
+@media (max-width: 640px) {
+  #discography > .container { padding-inline: 1rem; }
+}
+
+@media (max-width: 720px) and (max-height: 700px) {
+  .discography-modal__dialog { padding: 1rem; }
+  .discography-modal__content { gap: 1rem; }
+  .discography-modal__image { width: min(100%, 20svh); }
+  .discography-modal__heading,
+  .discography-modal__streams,
+  .discography-modal__credit { margin-block: 0; }
+  .discography-modal__audio { display: flex; flex-wrap: wrap; align-items: center; margin-top: 0; }
+  .discography-modal__toggle,
+  .discography-modal__spotify { min-height: 44px; display: inline-flex; align-items: center; }
+  .discography-modal__spotify[hidden] { display: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

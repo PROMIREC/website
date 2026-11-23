@@ -1,13 +1,9 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Hero from "../components/Hero.astro";
-import DiscographyWall from "../components/DiscographyWall.astro";
-import TextDiscography from "../components/TextDiscography.astro";
+import ArtistLibrary from "../components/ArtistLibrary.astro";
 import { loadWorks } from "../lib/works";
 
-const baseUrl = import.meta.env.BASE_URL.endsWith("/")
-  ? import.meta.env.BASE_URL
-  : `${import.meta.env.BASE_URL}/`;
 const sectionMenuLinks = [
   { label: "Bio", href: "#bio" },
   { label: "Discography", href: "#discography" },
@@ -17,6 +13,14 @@ const getSectionMenuLinks = (currentId: string) =>
   sectionMenuLinks.filter((link) => link.href !== `#${currentId}`);
 
 const works = await loadWorks();
+const mixedOrMastered = works.filter(work => /\b(?:mix|master)(?:ed|ing)?\b/i.test(work.role ?? ""));
+const catalogStreams = works.reduce((sum, work) => sum + (work.streams ?? 0), 0);
+const plays = new Intl.NumberFormat("en-US", {
+  notation: "compact",
+  compactDisplay: "long",
+  maximumFractionDigits: 2,
+}).format(catalogStreams);
+const currentYear = new Intl.DateTimeFormat("en", { year: "numeric", timeZone: "Europe/Brussels" }).format(new Date());
 ---
 
 <BaseLayout
@@ -74,8 +78,8 @@ const works = await loadWorks();
           Jan Leyers Laura Tesoro, HIDDN, Chackie Jam, Astodan... and many more.
         </p>
         <p>
-          As of 2026, I've mixed over 524 songs which have amassed more than 8.3 BILLION plays
-          across all digital streaming platforms. 33 of those singles and 3 albums have been honored
+          As of <span id="bio-year">{currentYear}</span>, I've worked on {works.length.toLocaleString("en-US")} songs, including {mixedOrMastered.length.toLocaleString("en-US")} that I mixed or mastered.
+          The full catalog has reached {plays} plays across digital streaming platforms. 33 of those singles and 3 albums have been honored
           with 27 GOLD, 108 PLATINUM and 2 DIAMOND awards. Notably, Lost Frequencies' "Alive &amp;
           Feeling Fine" and Metejoor's self-titled debut album both clinched Album of the Year awards
           at the Belgian Music Industry Awards.
@@ -104,14 +108,8 @@ const works = await loadWorks();
             </nav>
           </details>
         </div>
-        <p class="muted">
-          Click a tile to view details and play the preview. Streaming totals reflect combined plays across all major platforms. Data made available by Muso.ai.
-      </div>
-
-      <DiscographyWall dataUrl={`${baseUrl}data/works.json`} />
-
-      <div class="container">
-        <TextDiscography items={works} className="text-discography--subtle" />
+        <ArtistLibrary items={works} />
+        <p><a class="text-discography-link" href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/discography/`}>Text discography</a></p>
       </div>
     </section>
 
@@ -173,6 +171,10 @@ const works = await loadWorks();
   </main>
 
   <script type="module">
+    document.getElementById("bio-year").textContent = new Intl.DateTimeFormat("en", {
+      year: "numeric", timeZone: "Europe/Brussels",
+    }).format(new Date());
+
     const form = document.querySelector("#contact-form");
     if (form) {
       const container = form.closest("#contact");
@@ -237,3 +239,9 @@ const works = await loadWorks();
     }
   </script>
 </BaseLayout>
+
+<style>
+  .text-discography-link { color: #000; }
+  .text-discography-link:hover,
+  .text-discography-link:focus-visible { color: #ccc; }
+</style>

@@ -14,25 +14,23 @@ const { work } = Astro.props as {
   work: Awaited<ReturnType<typeof loadWorks>>[number];
 };
 
-const pageTitle = `${work.title} — ${work.role || "Mix"} credit | Andres Algaba`;
-const description = `Andres Algaba (${work.role || "Mix"} credit) for “${work.title}” by ${work.artist}. View discography and contact at promirec.com.`;
+const credit = work.role ? `${work.role} credit` : "Credit";
+const pageTitle = `${work.title} — ${credit} | Andres Algaba`;
+const description = `Andres Algaba (${credit}) for “${work.title}” by ${work.artist}. View discography and contact at promirec.com.`;
 const imageAlt = `Artwork for ${work.title} by ${work.artist}`;
 
 const musicRecordingJsonLd = {
   "@context": "https://schema.org",
   "@type": "MusicRecording",
   name: work.title,
-  byArtist: {
-    "@type": "MusicGroup",
-    name: work.artist,
-  },
+  byArtist: work.artist.split(",").map(name => name.trim()).filter(Boolean).map(name => ({ name })),
   inLanguage: "en",
   url: new URL(Astro.url.pathname, Astro.site ?? "https://promirec.com").href,
   image: work.artworkUrl,
   sameAs: work.spotifyUrl,
   contributor: {
     "@type": "Role",
-    roleName: `${work.role || "Mix"} engineer`,
+    roleName: work.role,
     contributor: {
       "@type": "Person",
       name: "Andres Algaba",
@@ -76,7 +74,7 @@ const musicRecordingJsonLd = {
         )}
         <div class="work__meta">
           <p class="work__credit">
-            <strong>{work.role || "Mix"}</strong> credit by <strong>Andres Algaba</strong> (PROMIREC), Antwerpen, Belgium.
+            <strong>{credit}</strong> by <strong>Andres Algaba</strong> (PROMIREC), Antwerpen, Belgium.
           </p>
           {typeof work.streams === "number" && (
             <p class="muted work__streams">
