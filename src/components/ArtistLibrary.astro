@@ -1,6 +1,29 @@
 ---
 import type { WorkItem } from "../lib/works";
 
+import releaseTitles from "../data/release-titles.json";
+const titlesByCover: Record<string, string> = releaseTitles;
+
+function groupReleases(tracks: WorkItem[]) {
+  const named = new Map<string, WorkItem[]>();
+  const other: WorkItem[] = [];
+  for (const track of tracks) {
+    const title = track.albumName || titlesByCover[track.artworkUrl ?? ""];
+    if (!title) {
+      other.push(track);
+      continue;
+    }
+    const group = named.get(title);
+    if (group) group.push(track);
+    else named.set(title, [track]);
+  }
+  const albums = [...named].map(([title, songs]) => ({
+    title, songs, streams: songs.reduce((sum, song) => sum + (song.streams ?? 0), 0),
+  })).sort((a, b) => b.streams - a.streams || a.title.localeCompare(b.title));
+  if (other.length) albums.push({ title: albums.length ? "Other tracks" : "", songs: other, streams: 0 });
+  return albums;
+}
+
 const { items } = Astro.props as { items: WorkItem[] };
 const byArtist = new Map<string, { artist: string; tracks: WorkItem[] }>();
 for (const track of items) {
@@ -55,14 +78,19 @@ const sleeves = [...byArtist.values()].map(({ tracks }) => tracks[0].artworkUrl)
               <small>{tracks.length} {tracks.length === 1 ? "track" : "tracks"} · {streamNumber.format(streams)}&nbsp;streams</small>
               <i class="chevron" aria-hidden="true"></i>
             </summary>
-            <div class="tracks">
-              {tracks.map(track => (
-                <button class="track" type="button" data-track={JSON.stringify(track)} aria-haspopup="dialog">
-                  <img src={track.artworkUrl} alt="" loading="lazy" width="48" height="48" />
-                  <span><strong>{track.title}</strong><small>{track.artist}</small></span>
-                </button>
-              ))}
-            </div>
+            {groupReleases(tracks).map(({ title, songs }) => (
+              <div class="release">
+                {title && <h4>{title} <small>{songs.length} {songs.length === 1 ? "track" : "tracks"}</small></h4>}
+                <div class="tracks">
+                  {songs.map(track => (
+                    <button class="track" type="button" data-track={JSON.stringify(track)} aria-haspopup="dialog">
+                      <img src={track.artworkUrl} alt="" loading="lazy" width="48" height="48" />
+                      <span><strong>{track.title}</strong><small>{track.artist}</small></span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
           </details>
         ))}
       </div>
@@ -422,6 +450,8 @@ const sleeves = [...byArtist.values()].map(({ tracks }) => tracks[0].artworkUrl)
   .artist-name { flex: 1; font-size: clamp(1.15rem, 2.4vw, 1.65rem); color: #dedede; overflow-wrap: anywhere; }
   .artist summary:hover, .artist[open] > summary { background: #141414; }
   .artist .chevron { margin-left: 0; }
+  .release h4 { display: flex; align-items: baseline; gap: .75rem; flex-wrap: wrap; margin: 0; padding: 1rem .6rem .5rem; color: #eee; font-size: 1.12rem; font-weight: 500; }
+  .release h4 small { font-weight: 400; }
   .tracks { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,19rem),1fr)); gap: 2px; padding-block: .3rem 1rem; }
   .track { display: flex; align-items: center; gap: .85rem; min-width: 0; padding: .7rem; background: #161616; color: #eee; text-align: left; font: inherit; cursor: pointer; border: 0; }
   .track:hover { background: #292929; }

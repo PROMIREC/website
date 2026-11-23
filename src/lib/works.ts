@@ -5,6 +5,7 @@ export type WorkItem = {
   id: string;
   artist: string;
   title: string;
+  albumName?: string;
   role?: string;
   label?: string;
   streams?: number;
@@ -58,6 +59,7 @@ export async function loadWorks(): Promise<WorkItem[]> {
         id,
         artist,
         title,
+        albumName: asNonEmptyString(record.albumName) ?? asNonEmptyString(record.album),
         role: asNonEmptyString(record.role),
         label: asNonEmptyString(record.label),
         streams: asNumber(record.streams),
