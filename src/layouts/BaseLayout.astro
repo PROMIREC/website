@@ -23,6 +23,8 @@ const sameAs = [
   "https://open.spotify.com/playlist/5WvWL0ZUvgjdfthCLzFMS8?si=613a621caa314770",
 ];
 
+const serializeJsonLd = (data: unknown) => JSON.stringify(data).replaceAll("<", "\\u003c");
+
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "Person",
@@ -88,9 +90,9 @@ const extraJsonLdArray = Array.isArray(extraJsonLd)
       <link rel="me" href={href} />
     ))}
 
-	    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+	    <script type="application/ld+json" set:html={serializeJsonLd(structuredData)} />
 	    {extraJsonLdArray.map((data) => (
-	      <script type="application/ld+json" set:html={JSON.stringify(data)} />
+	      <script type="application/ld+json" set:html={serializeJsonLd(data)} />
 	    ))}
 	  </head>
   <body>

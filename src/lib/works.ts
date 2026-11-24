@@ -53,7 +53,8 @@ export async function loadWorks(): Promise<WorkItem[]> {
       const title = asNonEmptyString(record.title);
       if (!id || !artist || !title) return null;
 
-      const spotifyUrl = asNonEmptyString(record.spotifyUrl ?? record.spotifyURL);
+      const trackId = asNonEmptyString(record.spotifyId);
+      const spotifyId = trackId && /^[A-Za-z0-9]{22}$/.test(trackId) ? trackId : undefined;
 
       return {
         id,
@@ -65,8 +66,8 @@ export async function loadWorks(): Promise<WorkItem[]> {
         streams: asNumber(record.streams),
         artworkUrl: asNonEmptyString(record.artworkUrl),
         previewUrl: asNonEmptyString(record.previewUrl),
-        spotifyId: asNonEmptyString(record.spotifyId),
-        spotifyUrl,
+        spotifyId,
+        spotifyUrl: spotifyId ? `https://open.spotify.com/track/${spotifyId}` : undefined,
       } satisfies WorkItem;
     })
     .filter((item): item is WorkItem => Boolean(item));

@@ -343,7 +343,7 @@ const sleeves = [...byArtist.values()].map(({ tracks }) => tracks[0].artworkUrl)
       }
       modalStreams.textContent = `${formatStreams(item.streams)} streams`;
       modalCredit.textContent = deriveCreditLine(item.role);
-      const spotifyUrl = item.spotifyUrl || item.spotifyURL;
+      const spotifyUrl = item.spotifyUrl;
       if (spotifyUrl) {
         modalSpotify.href = spotifyUrl;
         modalSpotify.hidden = false;
